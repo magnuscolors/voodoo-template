@@ -1,4 +1,4 @@
-FROM akretion/voodoo:latest
+FROM magnus/voodoo:latest
 
 # Generic Build script for production
 USER root
