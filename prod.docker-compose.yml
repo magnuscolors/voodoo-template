@@ -1,5 +1,15 @@
 version: '2'
 services:
+  db:
+    environment:
+    - POSTGRES_USER=odoo
+    - POSTGRES_DB=db
+    image: postgres:9.6
+    volumes:
+    - .db/data/:/var/lib/postgresql/data
+    - .db/socket/:/var/run/postgresql/
+    ports:
+    - 5432:5432
   odoo:
     build:
       context: .
@@ -8,8 +18,12 @@ services:
         - AK_ENV=prod
     environment:
     - AK_ENV=prod # TODO avoid repetition
+    links:
+    - db
     volumes:
-    - ../data:/home/odoo/data
+    - .:/workspace
+    - .db/socket/:/var/run/postgresql/
+    - ./data:/home/odoo/data
     labels:
       main_service: "True"
     ports:
