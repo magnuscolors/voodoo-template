@@ -12,4 +12,5 @@ RUN export AK_ENV=$AK_ENV && ak build
 # allow odoo user to read the openerp configuration
 RUN chmod 750 /workspace/etc/openerp.cfg && chgrp odoo /workspace/etc/openerp.cfg
 USER odoo
+ENTRYPOINT [""]
 CMD ["ak", "run"]
