@@ -4,7 +4,7 @@ FROM magnuscolors/voodoo:latest
 USER root
 # clone odoo to have a cache when re-building image
 RUN git clone https://github.com/OCA/OCB.git /workspace/parts/odoo
-ADD . /workspace/
+COPY . /workspace/
 RUN git config --global user.email "deploy@voodoo" && git config --global user.name "Voodoo Deploy"
 RUN ln -s /opt/voodoo/eggs /workspace/eggs
 ARG AK_ENV
@@ -12,4 +12,5 @@ RUN export AK_ENV=$AK_ENV && ak build
 # allow odoo user to read the odoo configuration
 RUN chmod 750 /workspace/etc/odoo.cfg && chgrp odoo /workspace/etc/odoo.cfg
 USER odoo
+ENTRYPOINT [""]
 CMD ["ak", "run"]
