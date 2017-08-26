@@ -21,7 +21,6 @@ services:
     links:
     - db
     volumes:
-    - .:/workspace
     - .db/socket/:/var/run/postgresql/
     - ./data:/home/odoo/data
     labels:
