@@ -59,7 +59,10 @@ services:
         - AK_ENV=prod
     environment:
     - AK_ENV=prod # TODO avoid repetition
-    - VIRTUAL_HOST=magnus-prod.vd
+    - VIRTUAL_HOST=${HOST}
+    - VIRTUAL_PORT=8069
+    - LETSENCRYPT_HOST=${HOST}
+    - LETSENCRYPT_EMAIL=${EMAIL}
     links:
     - db
     volumes:
@@ -67,6 +70,3 @@ services:
     - ./data:/home/odoo/data
     labels:
       main_service: "True"
-#    ports:
-#    - 8069:8069
-#    - 8072:8072
