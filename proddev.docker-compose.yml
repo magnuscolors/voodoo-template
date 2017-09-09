@@ -53,14 +53,10 @@ services:
     ports:
     - 5432:5432
   odoo:
-    build:
-      context: .
-      dockerfile: Dockerfile-prod
-      args:
-        - AK_ENV=prod
+    image: magnuscolors/voodoo:latest
+    expose: 8069
     restart: unless-stopped
     environment:
-    - AK_ENV=prod # TODO avoid repetition
     - VIRTUAL_HOST=${HOST}
     - VIRTUAL_PORT=8069
     - LETSENCRYPT_HOST=${HOST}
@@ -69,6 +65,8 @@ services:
     - db
     volumes:
     - .db/socket/:/var/run/postgresql/
-    - ./data:/home/odoo/data
+    - .:/workspace
+    - /home/voodoo.voodoo/shared:/home/voodoo.voodoo/shared
+    command: ["ak","run"]
     labels:
       main_service: "True"
