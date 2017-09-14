@@ -59,6 +59,9 @@ services:
       args:
         - AK_ENV=prod
     restart: unless-stopped
+    expose:
+    - 8069
+    - 8072
     environment:
     - AK_ENV=prod # TODO avoid repetition
     - VIRTUAL_HOST=${HOST}

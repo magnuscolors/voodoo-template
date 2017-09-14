@@ -54,7 +54,9 @@ services:
     - 5432:5432
   odoo:
     image: magnuscolors/voodoo:latest
-    expose: 8069
+    expose:
+    - 8069
+    - 8072
     restart: unless-stopped
     environment:
     - VIRTUAL_HOST=${HOST}
