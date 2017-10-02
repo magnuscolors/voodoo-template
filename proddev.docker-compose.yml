@@ -68,7 +68,7 @@ services:
     volumes:
     - .db/socket/:/var/run/postgresql/
     - .:/workspace
-    - /home/voodoo.voodoo/shared:/home/voodoo.voodoo/shared
+    - /home/voodoo/.voodoo/shared:/home/voodoo/.voodoo/shared
     command: ["ak","run"]
     labels:
       main_service: "True"
