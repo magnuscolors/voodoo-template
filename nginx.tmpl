@@ -124,6 +124,8 @@ server {
 
 # {{ $host }}
 {{ range $container := $containers }}
+    {{ $enable_allowlist := eq (or ($container.Env.ALLOWLIST) "") "true" }}
+    {{ $keyportal := eq (or ($container.Env.KEYPORTAL) "") "true" }}
     {{ $pp := split $container.Env.VIRTUAL_PORT ","}}
     {{ $ppLen := len $pp }}
     {{ $addrLen := len $container.Addresses }}
@@ -132,17 +134,23 @@ server {
             {{ if (and (ne $containerNetwork.Name "ingress") (or (eq $knownNetwork.Name $containerNetwork.Name) (eq $knownNetwork.Name "host"))) }}
                 {{/* If only 1 port exposed, use that */}}
                 {{ if (and (eq $addrLen 1) (le $ppLen 1)) }}
+                    {{ $address := index $container.Addresses 0 }}
+                    {{ if $keyportal }}
+upstream keyportal {
+                  server localhost:80;
+}
+					{{ else }}
 upstream {{ $upstream_name }} {
                     ## Can be connect with "{{ $containerNetwork.Name }}" network
-					    {{ $address := index $container.Addresses 0 }}
 					    {{ template "upstream" (dict "Container" $container "Address" $address "Network" $containerNetwork) }}
 }
+                    {{ end }}
                 {{ else if (and (gt $ppLen 1) (eq $addrLen $ppLen))}} {{/* port is specified with host. Use that */}}
                     {{ range $p := $pp }}
-upstream {{ $upstream_name }}_{{ $p }} {
-                    ## Can be connect with "{{ $containerNetwork.Name }}" network
                     {{ $portpath := split $p "/" }}
                     {{ $port := index $portpath 0 }}
+upstream {{ $upstream_name }}_{{ $port }} {
+                    ## Can be connect with "{{ $containerNetwork.Name }}" network
                     {{ $address := where $container.Addresses "Port" $port | first }}
                     {{ template "upstream" (dict "Container" $container "Address" $address "Network" $containerNetwork) }}
 }
@@ -191,11 +199,13 @@ server {
 
 server {
 	server_name {{ $host }};
-	{{ if (exists (printf "/etc/nginx/conf.d/%-allow.conf" $host)) }}
+	{{ if $enable_allowlist }}
+	    {{ if (exists (printf "/etc/nginx/conf.d/%-allow.conf" $host)) }}
 	include {{ (printf "/etc/nginx/conf.d/%-allow.conf" $host) }};
-	{{ end }}
+	    {{ end }}
     deny all;
     error_page 403  =  @error_redirect;
+    {{ end }}
 	listen 443 ssl http2 {{ $default_server }};
 	{{ if $enable_ipv6 }}
 	listen [::]:443 ssl http2 {{ $default_server }};
@@ -232,20 +242,23 @@ server {
 	{{ else if (exists "/etc/nginx/vhost.d/default") }}
 	include /etc/nginx/vhost.d/default;
 	{{ end }}
-
-	{{ if (and (gt $ppLen 1) (eq $addrLen $ppLen))}}
-    {{ range $p := $pp }}
-        {{ $path := "" }}
-        {{ $portpath := split $p "/" }}
-        {{ if gt (len $portpath) 1 }}
-            {{ $path := index $portpath 1 }}
+    {{ if not $keyportal }}
+	    {{ if (and (gt $ppLen 1) (eq $addrLen $ppLen))}}
+        {{ range $p := $pp }}
+            {{ $path := "" }}
+            {{ $portpath := split $p "/" }}
+            {{ $port := index $portpath 0 }}
+            {{ if gt (len $portpath) 1 }}
+                {{ $path := index $portpath 1 }}
 	location /{{ $path }} {
-	    {{ end }}
+		     {{ else }}
+    location / {
+		     {{ end }}
 		{{ if eq $proto "uwsgi" }}
 		include uwsgi_params;
-		uwsgi_pass {{ trim $proto }}://{{ trim $upstream_name }}_{{ $p }};
+		uwsgi_pass {{ trim $proto }}://{{ trim $upstream_name }}_{{ $port }};
 		{{ else }}
-		proxy_pass {{ trim $proto }}://{{ trim $upstream_name }}_{{ $p }};
+		proxy_pass {{ trim $proto }}://{{ trim $upstream_name }}_{{ $port }};
 		{{ end }}
 
 		{{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
@@ -258,38 +271,64 @@ server {
                 include /etc/nginx/vhost.d/default_location;
                 {{ end }}
 	}
-    {{ end }}
-	{{ else }}
+
+        {{ end }}
+	    {{ else }}
 	location / {
-		{{ if eq $proto "uwsgi" }}
-		include uwsgi_params;
-		uwsgi_pass {{ trim $proto }}://{{ trim $upstream_name }};
-		{{ else }}
-		proxy_pass {{ trim $proto }}://{{ trim $upstream_name }};
-		{{ end }}
+            {{ if eq $proto "uwsgi" }}
+            include uwsgi_params;
+            uwsgi_pass {{ trim $proto }}://{{ trim $upstream_name }};
+            {{ else }}
+            proxy_pass {{ trim $proto }}://{{ trim $upstream_name }};
+            {{ end }}
 
-		{{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-		auth_basic	"Restricted {{ $host }}";
-		auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-		{{ end }}
+            {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
+            auth_basic	"Restricted {{ $host }}";
+            auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+            {{ end }}
                 {{ if (exists (printf "/etc/nginx/vhost.d/%s_location" $host)) }}
                 include {{ printf "/etc/nginx/vhost.d/%s_location" $host}};
                 {{ else if (exists "/etc/nginx/vhost.d/default_location") }}
                 include /etc/nginx/vhost.d/default_location;
                 {{ end }}
 	}
-	{{ end }}
+
+            {{ if $enable_allowlist }}
+    location @error_redirect {
+        rewrite "^/(.*)$" /code/$1 break;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://keyportal;
+    }
+            {{ end }}
+         {{ end }}
+    {{ else }}
+    root /code;
+    index index.php;
+    location ~ \.php$ {
+		try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+    {{ end }}
+
 }
 
 {{ else if (or (not $is_https) (eq $https_method "noredirect")) }}
 
 server {
 	server_name {{ $host }};
-	{{ if (exists (printf "/etc/nginx/conf.d/%-allow.conf" $host)) }}
+	{{ if $enable_allowlist }}
+	    {{ if (exists (printf "/etc/nginx/conf.d/%-allow.conf" $host)) }}
 	include {{ (printf "/etc/nginx/conf.d/%-allow.conf" $host) }};
-	{{ end }}
+	    {{ end }}
     deny all;
     error_page 403  =  @error_redirect;
+    {{ end }}
 	listen 80 {{ $default_server }};
 	{{ if $enable_ipv6 }}
 	listen [::]:80 {{ $default_server }};
@@ -302,60 +341,80 @@ server {
 	include /etc/nginx/vhost.d/default;
 	{{ end }}
 
-    {{ if (and (gt $ppLen 1) (eq $addrLen $ppLen))}}
-    {{ range $p := $pp }}
-        {{ $portpath := split $p "/" }}
-        {{ if gt (len $portpath) 1 }}
-            {{ $path := index $portpath 1 }}
+    {{ if not $keyportal }}
+	    {{ if (and (gt $ppLen 1) (eq $addrLen $ppLen))}}
+        {{ range $p := $pp }}
+            {{ $path := "" }}
+            {{ $portpath := split $p "/" }}
+            {{ $port := index $portpath 0 }}
+            {{ if gt (len $portpath) 1 }}
+                {{ $path := index $portpath 1 }}
 	location /{{ $path }} {
+			{{ else }}
+    location / {
+		    {{ end }}
+		{{ if eq $proto "uwsgi" }}
+		include uwsgi_params;
+		uwsgi_pass {{ trim $proto }}://{{ trim $upstream_name }}_{{ $port }};
+		{{ else }}
+		proxy_pass {{ trim $proto }}://{{ trim $upstream_name }}_{{ $port }};
+		{{ end }}
+
+		{{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
+		auth_basic	"Restricted {{ $host }}";
+		auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+		{{ end }}
+                {{ if (exists (printf "/etc/nginx/vhost.d/%s_location" $host)) }}
+                include {{ printf "/etc/nginx/vhost.d/%s_location" $host}};
+                {{ else if (exists "/etc/nginx/vhost.d/default_location") }}
+                include /etc/nginx/vhost.d/default_location;
+                {{ end }}
+	}
+
+        {{ end }}
 	    {{ else }}
 	location / {
+            {{ if eq $proto "uwsgi" }}
+            include uwsgi_params;
+            uwsgi_pass {{ trim $proto }}://{{ trim $upstream_name }};
+            {{ else }}
+            proxy_pass {{ trim $proto }}://{{ trim $upstream_name }};
+            {{ end }}
+
+            {{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
+            auth_basic	"Restricted {{ $host }}";
+            auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
+            {{ end }}
+                {{ if (exists (printf "/etc/nginx/vhost.d/%s_location" $host)) }}
+                include {{ printf "/etc/nginx/vhost.d/%s_location" $host}};
+                {{ else if (exists "/etc/nginx/vhost.d/default_location") }}
+                include /etc/nginx/vhost.d/default_location;
+                {{ end }}
+	}
+
 	    {{ end }}
-
-		{{ if eq $proto "uwsgi" }}
-		include uwsgi_params;
-		uwsgi_pass {{ trim $proto }}://{{ trim $upstream_name }}_{{ $p }};
-		{{ else }}
-		proxy_pass {{ trim $proto }}://{{ trim $upstream_name }}_{{ $p }};
-		{{ end }}
-
-		{{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-		auth_basic	"Restricted {{ $host }}";
-		auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-		{{ end }}
-                {{ if (exists (printf "/etc/nginx/vhost.d/%s_location" $host)) }}
-                include {{ printf "/etc/nginx/vhost.d/%s_location" $host}};
-                {{ else if (exists "/etc/nginx/vhost.d/default_location") }}
-                include /etc/nginx/vhost.d/default_location;
-                {{ end }}
-	}
-    {{ end }}
-
-	{{ else }}
-	location / {
-		{{ if eq $proto "uwsgi" }}
-		include uwsgi_params;
-		uwsgi_pass {{ trim $proto }}://{{ trim $upstream_name }};
-		{{ else }}
-		proxy_pass {{ trim $proto }}://{{ trim $upstream_name }};
-		{{ end }}
-		{{ if (exists (printf "/etc/nginx/htpasswd/%s" $host)) }}
-		auth_basic	"Restricted {{ $host }}";
-		auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
-		{{ end }}
-                {{ if (exists (printf "/etc/nginx/vhost.d/%s_location" $host)) }}
-                include {{ printf "/etc/nginx/vhost.d/%s_location" $host}};
-                {{ else if (exists "/etc/nginx/vhost.d/default_location") }}
-                include /etc/nginx/vhost.d/default_location;
-                {{ end }}
-	}
-	{{ end }}
-	location @error_redirect {
-        rewrite "^/(.*)$" /nsm/$1 break;
+        {{ if $enable_allowlist }}
+    location @error_redirect {
+        rewrite "^/(.*)$" /code/$1 break;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_pass http://keyportal;
     }
+        {{ end }}
+    {{ else }}
+    root /code;
+    index index.php;
+    location ~ \.php$ {
+		try_files $uri =404;
+        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+    {{ end }}
+
 }
 {{ else if (and (not $is_https) (exists "/etc/nginx/certs/default.crt") (exists "/etc/nginx/certs/default.key")) }}
 
