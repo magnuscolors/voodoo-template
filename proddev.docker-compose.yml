@@ -15,7 +15,7 @@ services:
       - ${NGINX_FILES_PATH}/vhost.d:/etc/nginx/vhost.d
       - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
       - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:ro
-      - ./php-code:/code
+      - .php/code:/code
 
 
   nginx-gen:
@@ -38,7 +38,7 @@ services:
     volumes:
       - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./php-code:/code
+      - .php/code:/code
 
   nginx-letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
@@ -59,7 +59,7 @@ services:
     container_name: php
     restart: unless-stopped
     volumes:
-      - ./php-code:/code
+      - .php/code:/code
     environment:
     - VIRTUAL_HOST=keyportal
     - VIRTUAL_PORT=80

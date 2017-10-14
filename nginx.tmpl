@@ -292,8 +292,8 @@ server {
         auth_basic	"Restricted {{ $host }}";
         auth_basic_user_file	{{ (printf "/etc/nginx/htpasswd/%s" $host) }};
             {{ end }}
+
 	}
-	    {{ end }}
             {{ if $enable_allowlist }}
     location @error_redirect {
         rewrite "^/(.*)$" /$1 break;
@@ -302,6 +302,7 @@ server {
         proxy_pass http://keyportal;
     }
             {{ end }}
+        {{ end }}
     {{ else }}
     root /code;
     index index.php;
