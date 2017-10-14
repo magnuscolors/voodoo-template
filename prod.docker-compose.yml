@@ -15,7 +15,7 @@ services:
       - ${NGINX_FILES_PATH}/vhost.d:/etc/nginx/vhost.d
       - ${NGINX_FILES_PATH}/html:/usr/share/nginx/html
       - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:ro
-      - .php/code:/code
+      - .php:/php
 
   nginx-gen:
     image: jwilder/docker-gen
@@ -29,15 +29,6 @@ services:
       - ${NGINX_FILES_PATH}/certs:/etc/nginx/certs:ro
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
-
-  allowlist-reload:
-    image: magnuscolors/allowlist-reload
-    container_name: allowlist-reload
-    restart: unless-stopped
-    volumes:
-      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
-      - /var/run/docker.sock:/var/run/docker.sock
-      - .php/code:/code
 
   nginx-letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
@@ -54,15 +45,27 @@ services:
       NGINX_PROXY_CONTAINER: "nginx"
 
   php:
-    image: php:7-fpm
+    image: magnuscolors/php-keyportal
     container_name: php
     restart: unless-stopped
     volumes:
-      - .php/code:/code
+      - .php:/php
     environment:
-      - VIRTUAL_HOST=keyportal
-      - VIRTUAL_PORT=80
-      - KEYPORTAL=true
+    - VIRTUAL_HOST=keyportal
+    - VIRTUAL_PORT=80
+    - CODE_PATH=/php/code
+    - KEYPORTAL=true
+
+  allowlist-reload:
+    image: magnuscolors/allowlist-reload
+    container_name: allowlist-reload
+    restart: unless-stopped
+    environment:
+      - ALLOW_LIST=/php/code/KeyPortal/iplog-www
+    volumes:
+      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
+      - /var/run/docker.sock:/var/run/docker.sock
+      - .php:/php
 
   db:
     environment:

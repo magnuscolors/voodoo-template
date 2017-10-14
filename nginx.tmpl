@@ -304,7 +304,7 @@ server {
             {{ end }}
         {{ end }}
     {{ else }}
-    root /code;
+    root {{ ($container.Env.CODE_PATH) }};
     index index.php;
     location ~ \.php$ {
 		try_files $uri =404;
@@ -404,7 +404,7 @@ server {
     }
             {{ end }}
     {{ else }}
-    root /code;
+    root {{ ($container.Env.CODE_PATH) }};
     index index.php;
     location ~ \.php$ {
 		try_files $uri =404;
