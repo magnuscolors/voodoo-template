@@ -1,0 +1,6 @@
+## blocking of databasemanager link for regular users
+location = /web/database/manager {
+	 allow 10.147.18.0/24;
+    	 deny all;
+	 proxy_pass http://bo-test.bdu.nl_8069;
+}

@@ -6,6 +6,7 @@ _build/
 !.env
 !.env-example
 !.gitignore
+!.nginx
 # compiled python files
 *.py[co]
 # setup.py egg_info
