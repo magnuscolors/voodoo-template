@@ -296,7 +296,8 @@ server {
         {{ end }}
             {{ if $enable_allowlist }}
     location @error_redirect {
-        rewrite ^/web/(.*)$ /index.php ;
+        rewrite "^/web/(.*)$" / break;
+        rewrite "^/web(.*)$" /$1 break;
         rewrite "^/(.*)$" /$1 break;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -397,9 +398,10 @@ server {
 	    {{ end }}
             {{ if $enable_allowlist }}
     location @error_redirect {
-        rewrite ^/web/(.*)$ /index.php ;
-        rewrite ^/(.*)$ /$1 break;
-        proxy_set_header X-Real-IP $remote_addr;
+        rewrite "^/web/(.*)$" / break;
+        rewrite "^/web(.*)$" /$1 break;
+        rewrite "^/(.*)$" /$1 break;
+	proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_pass http://keyportal;
     }
