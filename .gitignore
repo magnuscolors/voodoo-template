@@ -4,6 +4,7 @@ _build/
 # dotfiles
 .*
 !.env
+!.env-example
 !.gitignore
 # compiled python files
 *.py[co]
