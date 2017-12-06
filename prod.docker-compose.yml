@@ -61,7 +61,7 @@ services:
     container_name: allowlist-reload
     restart: unless-stopped
     environment:
-      - ALLOW_LIST=/php/code/KeyPortal/iplog-www
+      - ALLOW_LIST=/php/code/KeyPortal/iplog-bo
     volumes:
       - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
       - /var/run/docker.sock:/var/run/docker.sock
