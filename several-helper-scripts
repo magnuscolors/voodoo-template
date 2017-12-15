@@ -1,9 +1,6 @@
-## blocking of databasemanager link for regular users
-location = /web/database/manager {
-	 allow 10.147.18.0/24;
-    	 deny all;
-	 proxy_pass http://bo.bdu.nl_8069;
-}
+
+## adapted startup script for voodoo-proxy in MacOS
+docker run -d -v /var/run/docker.sock:/tmp/docker.sock:ro -v /etc/hosts:/app/hosts -p 80:80 --network vd --name voodoo-proxy akretion/voodoo-proxy
 
 ## nginx directive for buffered static content Odoo
 location ~* /web/static/ {
@@ -14,5 +11,5 @@ location ~* /web/static/ {
         proxy_buffering on;
         proxy_hide_header Set-Cookie;
         proxy_ignore_headers Set-Cookie;
-        proxy_pass http://bo.bdu.nl_8069;
-}
+        proxy_pass http://hexon_fi;
+    }
