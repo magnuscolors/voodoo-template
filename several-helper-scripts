@@ -13,3 +13,8 @@ location ~* /web/static/ {
         proxy_ignore_headers Set-Cookie;
         proxy_pass http://hexon_fi;
     }
+## to run zerotier in CoreOS:
+docker run --device=/dev/net/tun --net=host --cap-add=NET_ADMIN --cap-add=SYS_ADMIN -d -v /var/lib/zerotier-one:/var/lib/zerotier-one --name zerotier-one zerotier/zerotier-containerized
+
+## To join a zerotier network:
+docker exec zerotier-one /zerotier-cli join "ID"
