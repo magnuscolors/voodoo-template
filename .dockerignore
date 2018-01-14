@@ -1,0 +1,9 @@
+# comment
+.db
+.nginx
+.php
+.git
+.*
+data
+nginx.tmpl
+several-helper-scripts
