@@ -1,0 +1,20 @@
+
+## adapted startup script for voodoo-proxy in MacOS
+docker run -d -v /var/run/docker.sock:/tmp/docker.sock:ro -v /etc/hosts:/app/hosts -p 80:80 --network vd --name voodoo-proxy akretion/voodoo-proxy
+
+## nginx directive for buffered static content Odoo
+location ~* /web/static/ {
+        access_log off;
+        log_not_found off;
+        expires 10d;
+        proxy_cache_valid 200 60m;
+        proxy_buffering on;
+        proxy_hide_header Set-Cookie;
+        proxy_ignore_headers Set-Cookie;
+        proxy_pass http://hexon_fi;
+    }
+## to run zerotier in CoreOS:
+docker run --device=/dev/net/tun --net=host --cap-add=NET_ADMIN --cap-add=SYS_ADMIN -d -v /var/lib/zerotier-one:/var/lib/zerotier-one --name zerotier-one zerotier/zerotier-containerized
+
+## To join a zerotier network:
+docker exec zerotier-one /zerotier-cli join "ID"
