@@ -11,5 +11,6 @@ ARG AK_ENV
 RUN export AK_ENV=$AK_ENV && ak build
 # allow odoo user to read the odoo configuration
 RUN chmod 750 /workspace/etc/odoo.cfg && chgrp odoo /workspace/etc/odoo.cfg
+RUN chmod 750 /workspace/etc/odoo.cfg && chown -R odoo:odoo /home/odoo
 USER odoo
 CMD ["ak", "run"]
