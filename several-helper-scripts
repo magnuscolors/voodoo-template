@@ -18,3 +18,6 @@ docker run --device=/dev/net/tun --net=host --cap-add=NET_ADMIN --cap-add=SYS_AD
 
 ## To join a zerotier network:
 docker exec zerotier-one /zerotier-cli join "ID"
+
+## To delete anonymous sessions:
+find . -name "*.sess" -size -130c -delete
