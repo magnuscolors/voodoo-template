@@ -4,3 +4,13 @@ location = /web/database/manager {
     	 deny all;
 	 proxy_pass http://bo-test.bdu.nl_8069;
 }
+## nginx directive for buffered static content Odoo
+location ~* /web/static/ {
+        access_log off;
+        log_not_found off;
+        expires 10d;
+        proxy_cache_valid 200 60m;
+        proxy_buffering on;
+        proxy_hide_header Set-Cookie;
+        proxy_ignore_headers Set-Cookie;
+        proxy_pass http://bo-test.bdu.nl_8069;
