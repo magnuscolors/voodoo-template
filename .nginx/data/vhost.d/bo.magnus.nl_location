@@ -1,0 +1,16 @@
+## blocking of databasemanager link for regular users
+location = /web/database/manager {
+	 allow 10.147.18.0/24;
+    	 deny all;
+	 proxy_pass http://bo.magnus.nl_8069;
+}
+## nginx directive for buffered static content Odoo
+location ~* /web/static/ {
+        access_log off;
+        log_not_found off;
+        expires 10d;
+        proxy_cache_valid 200 60m;
+        proxy_buffering on;
+        proxy_hide_header Set-Cookie;
+        proxy_ignore_headers Set-Cookie;
+        proxy_pass http://bo.magnus.nl_8069;
