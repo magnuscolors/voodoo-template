@@ -14,3 +14,4 @@ location ~* /web/static/ {
         proxy_hide_header Set-Cookie;
         proxy_ignore_headers Set-Cookie;
         proxy_pass http://bo-accept.newskoolmedia.nl_8069;
+        }
