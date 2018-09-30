@@ -21,3 +21,6 @@ docker exec zerotier-one /zerotier-cli join "ID"
 
 ## To delete anonymous sessions:
 find . -name "*.sess" -size -130c -delete
+
+## To use scaffold feature with the voodoo/ak environment. Inside running odoo container:
+python bin/gevent_start scaffold [-h] [-t TEMPLATEPATH] name_mod [location_path]
