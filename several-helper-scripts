@@ -24,3 +24,6 @@ find . -name "*.sess" -size -130c -delete
 
 ## To use scaffold feature with the voodoo/ak environment. Inside running odoo container:
 python bin/gevent_start scaffold [-h] [-t TEMPLATEPATH] name_mod [location_path]
+
+## To update CoreOS forced:
+update_engine_client -update
