@@ -14,7 +14,7 @@ location ~* /web/static/ {
         proxy_pass http://hexon_fi;
     }
 ## to run zerotier in CoreOS:
-docker run --device=/dev/net/tun --net=host --cap-add=NET_ADMIN --cap-add=SYS_ADMIN -d -v /var/lib/zerotier-one:/var/lib/zerotier-one --name zerotier-one zerotier/zerotier-containerized
+docker run --device=/dev/net/tun --net=host --cap-add=NET_ADMIN --cap-add=SYS_ADMIN -d -v /var/lib/zerotier-one:/var/lib/zerotier-one --restart unless-stopped --name zerotier-one zerotier/zerotier-containerized
 
 ## To join a zerotier network:
 docker exec zerotier-one /zerotier-cli join "ID"
@@ -24,3 +24,7 @@ find . -name "*.sess" -size -130c -delete
 
 ## To use scaffold feature with the voodoo/ak environment. Inside running odoo container:
 python bin/gevent_start scaffold [-h] [-t TEMPLATEPATH] name_mod [location_path]
+
+## To grant rights tp postgres users per object/table
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO user;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO user;
