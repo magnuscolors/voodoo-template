@@ -80,24 +80,31 @@ services:
       - 5432:5432
 
   odoo:
-    build:
-      context: .
-      dockerfile: Dockerfile-prod
-      args:
-        - AK_ENV=prod
+    image: magnus:443/magnusprod_odoo:latest
     restart: unless-stopped
     expose:
-      - 8069
-      - 8072
+    - 8069
+    - 8072
     environment:
-      - AK_ENV=prod # TODO avoid repetition
-      - VIRTUAL_HOST=${HOST}
-      - VIRTUAL_PORT=8069,8072/longpolling
-      - ALLOWLIST=true
-      - LETSENCRYPT_HOST=${HOST}
-      - LETSENCRYPT_EMAIL=${EMAIL}
+    - AK_ENV=prod # TODO avoid repetition
+    - VIRTUAL_HOST=${HOST}
+    - VIRTUAL_PORT=8069,8072/longpolling
+    - ALLOWLIST=true
+    - LETSENCRYPT_HOST=${HOST}
+    - LETSENCRYPT_EMAIL=${EMAIL}
     volumes:
-      - .db/socket/:/var/run/postgresql/
-      - ./data:/home/odoo/data
+    - .db/socket/:/var/run/postgresql/
+    - ./data:/home/odoo/data
     labels:
       main_service: "True"
+    command: ["ak","run"]
+
+  jq:
+    image: magnus:443/magnusprod_odoo:latest
+    restart: unless-stopped
+    environment:
+    - ODOO_QUEUE_JOB_CHANNELS=root:4,root.one:1,root.two:2,root.three:3,root.import:2,root.Ad4all:2,root.ir_cron:2
+    volumes:
+    - .db/socket/:/var/run/postgresql/
+    - ./data:/home/odoo/data
+    command: ["ak","run","--max-cron-threads=2","--load=web,web_kanban,queue_job","--workers=4"]
