@@ -1,6 +1,0 @@
-version: '2'
-services:
-  odoo:
-    image: magnuscolors/voodoo:latest
-    labels:
-      main_service: "True"
