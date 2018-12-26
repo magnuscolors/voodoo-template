@@ -84,7 +84,7 @@ services:
       context: .
       dockerfile: Dockerfile-prod
       args:
-	    - AK_ENV=prod
+       - AK_ENV=prod
     image: magnus:443/magnusprod_odoo:latest
     restart: unless-stopped
     expose:
