@@ -80,7 +80,12 @@ services:
       - 5432:5432
 
   odoo:
-    image: magnus-nsm:443/nsmprod_odoo:latest
+    build:
+      context: .
+      dockerfile: Dockerfile-prod
+      args:
+        - AK_ENV=prod
+    image: magnus:443/nsmprod_odoo:latest
     restart: unless-stopped
     expose:
       - 8069
@@ -99,8 +104,8 @@ services:
       main_service: "True"
     command: ["ak","run"]
 
-  jq:
-    image: magnus-nsm:443/nsmprod_odoo:latest
+  odoojq:
+    image: magnus:443/nsmprod_odoo:latest
     restart: unless-stopped
     environment:
     - ODOO_QUEUE_JOB_CHANNELS=root:4,root.one:1,root.two:2,root.three:3,root.import:2,root.Ad4all:2,root.ir_cron:2
