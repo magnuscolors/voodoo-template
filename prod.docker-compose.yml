@@ -80,6 +80,11 @@ services:
       - 5432:5432
 
   odoo:
+    build:
+      context: .
+      dockerfile: Dockerfile-prod
+      args:
+	    - AK_ENV=prod
     image: magnus:443/magnusprod_odoo:latest
     restart: unless-stopped
     expose:
@@ -99,7 +104,7 @@ services:
       main_service: "True"
     command: ["ak","run"]
 
-  jq:
+  odoojq:
     image: magnus:443/magnusprod_odoo:latest
     restart: unless-stopped
     environment:
