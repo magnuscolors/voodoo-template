@@ -7,6 +7,9 @@ RUN git clone https://github.com/magnuscolors/OCB.git /workspace/parts/odoo
 COPY . /workspace/
 RUN git config --global user.email "w.hulshof@magnus.nl@voodoo" && git config --global user.name "Magnus Deploy"
 RUN ln -s /opt/voodoo/eggs /workspace/eggs
+RUN DEBIAN_FRONTEND=noninteractive \
+    && apt-get update \
+    && apt-get install libgeos-dev
 ARG AK_ENV
 RUN export AK_ENV=$AK_ENV && ak build
 # allow odoo user to read the odoo configuration
