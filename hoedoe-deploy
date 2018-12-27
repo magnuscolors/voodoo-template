@@ -40,7 +40,7 @@ if [[ ${A} = "y" ]]
     read K
         if [[ ${K} = "y" ]]
             then
-            VOLUMES=$VOLUMES + " -v $(pwd)/.db/socket/:/var/run/postgresql/"
+            VOLUMES="$VOLUMES -v $(pwd)/.db/socket/:/var/run/postgresql/"
         fi
 fi
 
