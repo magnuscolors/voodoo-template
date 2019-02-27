@@ -10,7 +10,7 @@ IMAGE=$1
 TAG=$2
 VOLUMES="-v $(pwd)/data:/home/odoo/data"
 VOODINDOCK="magnuscolors/voodindock:latest"
-DC_DIR="/home/voodoo/bdu-test"
+DC_DIR="/home/voodoo/nsm-prod"
 if [[ -z $1 ]]
 then
 echo "Which Image should be altered for deploy?"
