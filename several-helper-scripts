@@ -2,6 +2,10 @@
 ## adapted startup script for voodoo-proxy in MacOS
 docker run -d -v /var/run/docker.sock:/tmp/docker.sock:ro -v /etc/hosts:/app/hosts -p 80:80 --network vd --name voodoo-proxy akretion/voodoo-proxy
 
+## startup script voor build container
+docker run -it -v /home/voodoo/xxx-test/.db/socket:/var/run/postgresql -v /home/voodoo/xxx-test:/workspace -v
+/home/voodoo/.voodoo/shared:/home/voodoo/.voodoo/share --name xxxtest_odoo_build magnuscolors/voodoo:1.0-pdf2image bash
+
 ## nginx directive for buffered static content Odoo
 location ~* /web/static/ {
         access_log off;
@@ -19,12 +23,28 @@ docker run --device=/dev/net/tun --net=host --cap-add=NET_ADMIN --cap-add=SYS_AD
 ## To join a zerotier network:
 docker exec zerotier-one /zerotier-cli join "ID"
 
+## To count # of sessions:
+ ls | wc -l
+
 ## To delete anonymous sessions:
 find . -name "*.sess" -size -130c -delete
 
 ## To use scaffold feature with the voodoo/ak environment. Inside running odoo container:
 python bin/gevent_start scaffold [-h] [-t TEMPLATEPATH] name_mod [location_path]
 
+## POSTGRES SQL
 ## To grant rights tp postgres users per object/table
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO user;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO user;
+
+truncate analytic_user_total_analytic_line_rel; ## to empty a table
+
+ALTER TABLE table_name
+RENAME COLUMN column_name TO new_column_name; ## to change column-name
+
+ALTER TABLE table_name
+RENAME TO new_table_name; ## to change table-name
+
+insert into analytic_user_total_analytic_line_rel (analytic_line_id,user_total_id)
+SELECT account_analytic_line_id,analytic_account_id
+    FROM analytic_invoice_account_line_reluser_total_id;
