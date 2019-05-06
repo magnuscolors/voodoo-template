@@ -13,7 +13,7 @@ VOODINDOCK="magnuscolors/voodindock:latest"
 DC_DIR="/home/voodoo/bdu-test"
 
 if [[ -z $1 ]]
-then
+    then
     echo "Which Image should be altered for deploy?"
     read IMAGE
     echo "Which Tag?"
@@ -41,9 +41,8 @@ then
      have to do ak run --db_host=xxx.xxx.xxx.xxx --db_port=5432
      (y/n)"
     read K
-
         if [[ ${K} = "y" ]]
-        then
+            then
             VOLUMES="$VOLUMES -v $(pwd)/.db/socket/:/var/run/postgresql/"
         fi
 fi
@@ -52,26 +51,23 @@ try docker run -it -u root ${VOLUMES} --name hoedoedeploy ${IMAGENAME} bash
 
 echo "Do you want to commit the changes you made to ${IMAGENAME}? (y/n)"
 read B
-
 if [[ ${B} = "y" ]]
-then
-    try docker commit hoedoedeploy ${IMAGENAME}
-else
-    echo "Do you want to commit to a different image? (y/n)"
-    read D
-
-    if [[ ${D} = "y" ]]
     then
-        echo "Please specify the IMAGE:TAG you want to commit to"
-        read E
-        echo "Are you sure you want to commit to $E?"
-        read F
-
-        if [[ ${F} = "y" ]]
+        try docker commit hoedoedeploy ${IMAGENAME}
+    else
+        echo "Do you want to commit to a different image? (y/n)"
+        read D
+    if [[ ${D} = "y" ]]
         then
-            try docker commit hoedoedeploy $E
-            OLDIMAGEIDALT=$(docker images -q --filter=reference=${E})
-        fi
+            echo "Please specify the IMAGE:TAG you want to commit to"
+            read E
+            echo "Are you sure you want to commit to $E?"
+            read F
+            if [[ ${F} = "y" ]]
+                then
+                    try docker commit hoedoedeploy $E
+                    OLDIMAGEIDALT=$(docker images -q --filter=reference=${E})
+            fi
     fi
 fi
 
@@ -79,69 +75,62 @@ echo "Update-Container hoedoedeploy will now be deleted"
 docker rm hoedoedeploy
 
 if [[ ${B} = "y" ]]
-then
-    echo "Do you want to push the changes you made to ${IMAGENAME}? (y/n)"
-    read C
-
-    if [[ ${C} = "y" ]]
     then
-        try docker push ${IMAGENAME}
-    fi
+        echo "Do you want to push the changes you made to ${IMAGENAME}? (y/n)"
+        read C
+        if [[ ${C} = "y" ]]
+            then
+                try docker push ${IMAGENAME}
+        fi
 fi
 if [[ ${F} = "y" ]]
-then
+    then
         echo "Do you want to push the changes you made to ${E}? (y/n)"
         read C
-
-            if [[ ${C} = "y" ]]
+        if [[ ${C} = "y" ]]
             then
                 try docker push $E
-            fi
+        fi
 fi
 if [[ ${B} = "y" ]] && [[ ${A} != "y" ]]
-then
-    echo "Do you want to stop and remove running containers from image
-    ${IMAGENAME}? (y/n)"
-    read G
-
-    if [[ ${G} = "y" ]]
     then
-        try docker rm -f $(docker ps -q -f "ancestor=${OLDIMAGEID}")
-        echo "Removed containers derived from Image ${OLDIMAGEID}."
-    fi
-elif [[ ${B} = "y" ]]
-then
-    echo "Do you want to run \"voodoo up\"? (y/n)"
-    read I
-
-    if [[ ${I} = "y" ]]
-    then
-        cd ${DC_DIR}
-        try voodoo up
-        try docker rm -f $(docker ps -q -f "ancestor=${VOODINDOCK}")
-        docker ps
-        echo "READY!!!"
-    fi
-elif [[ ${D} = "y" ]] && [[ ${F} = "y" ]]
-then
-    echo "Do you want to stop and remove running containers from image ${E}?"
-    read H
-
-    if [[ ${H} = "y" ]]
-    then
-        try docker rm -f $(docker ps -q -f "ancestor=${OLDIMAGEIDALT}")
-        echo "Removed containers derived from Image ${OLDIMAGEIDALT}. Do you
-        want to run \"voodoo up\"? (y/n)"
-        read J
-
-        if [[ ${J} = "y" ]]
-        then
-            cd ${DC_DIR}
-            try voodoo up
-            try docker rm -f $(docker ps -q -f "ancestor=${VOODINDOCK}")
-            docker ps
-            echo "READY!!!"
+        echo "Do you want to stop and remove running containers from image
+        ${IMAGENAME}? (y/n)"
+        read G
+        if [[ ${G} = "y" ]]
+            then
+                try docker rm -f $(docker ps -q -f "ancestor=${OLDIMAGEID}")
+                echo "Removed containers derived from Image ${OLDIMAGEID}."
         fi
-    fi
-
+elif [[ ${B} = "y" ]]
+    then
+        echo "Do you want to run \"voodoo up\"? (y/n)"
+        read I
+        if [[ ${I} = "y" ]]
+            then
+                cd ${DC_DIR}
+                try voodoo up
+                try docker rm -f $(docker ps -q -f "ancestor=${VOODINDOCK}")
+                docker ps
+                echo "READY!!!"
+        fi
+elif [[ ${D} = "y" ]] && [[ ${F} = "y" ]]
+    then
+        echo "Do you want to stop and remove running containers from image ${E}?"
+        read H
+        if [[ ${H} = "y" ]]
+            then
+                try docker rm -f $(docker ps -q -f "ancestor=${OLDIMAGEIDALT}")
+                echo "Removed containers derived from Image ${OLDIMAGEIDALT}. Do you
+                want to run \"voodoo up\"? (y/n)"
+                read J
+                if [[ ${J} = "y" ]]
+                    then
+                        cd ${DC_DIR}
+                        try voodoo up
+                        try docker rm -f $(docker ps -q -f "ancestor=${VOODINDOCK}")
+                        docker ps
+                        echo "READY!!!"
+                fi
+        fi
 fi

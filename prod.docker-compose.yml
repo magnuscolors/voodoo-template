@@ -50,11 +50,16 @@ services:
     restart: unless-stopped
     volumes:
       - .php:/php
+      - .db/socket/:/var/run/postgresql/
     environment:
-    - VIRTUAL_HOST=keyportal
-    - VIRTUAL_PORT=80
-    - CODE_PATH=/php/code
-    - KEYPORTAL=true
+      - HOST=${HOST}
+      - SUB=bo-test
+      - VIRTUAL_HOST=keyportal
+      - VIRTUAL_PORT=80
+      - CODE_PATH=/php/code
+      - KEYPORTAL=true
+      - MAILHUB=10.131.1.19
+      - FROMLINEOVERRIDE=YES
 
   allowlist-reload:
     image: magnuscolors/allowlist-reload
@@ -85,6 +90,7 @@ services:
       dockerfile: Dockerfile-prod
       args:
         - AK_ENV=prod
+    image: magnus-registry:443/xxxprod_odoo:latest
     restart: unless-stopped
     expose:
       - 8069
@@ -101,3 +107,14 @@ services:
       - ./data:/home/odoo/data
     labels:
       main_service: "True"
+    command: ["ak","run"]
+
+  odoojq:
+    image: magnus-registry:443/xxxprod_odoo:latest
+    restart: unless-stopped
+    environment:
+    - ODOO_QUEUE_JOB_CHANNELS=root:4,root.one:1,root.two:2,root.three:3,root.import:2,root.Ad4all:2,root.ir_cron:2
+    volumes:
+    - .db/socket/:/var/run/postgresql/
+    - ./data:/home/odoo/data
+    command: ["ak","run","--max-cron-threads=2","--load=web,web_kanban,queue_job","--workers=4"]

@@ -3,7 +3,7 @@ FROM magnuscolors/voodoo:latest
 # Generic Build script for production
 USER root
 # clone odoo to have a cache when re-building image
-RUN git clone https://github.com/OCA/OCB.git /workspace/parts/odoo
+RUN git clone https://github.com/magnuscolors/OCB.git /workspace/parts/odoo
 COPY . /workspace/
 RUN git config --global user.email "w.hulshof@magnus.nl@voodoo" && git config --global user.name "Magnus Deploy"
 RUN ln -s /opt/voodoo/eggs /workspace/eggs
