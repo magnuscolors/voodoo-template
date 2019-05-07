@@ -44,45 +44,33 @@ services:
       NGINX_DOCKER_GEN_CONTAINER: "nginx-gen"
       NGINX_PROXY_CONTAINER: "nginx"
 
-  php:
-    image: magnuscolors/php-keyportal
-    container_name: php
-    restart: unless-stopped
-    volumes:
-      - .php:/php
-      - .db/socket/:/var/run/postgresql/
-    environment:
-      - HOST=${HOST}
-      - SUB=bo-test
-      - VIRTUAL_HOST=keyportal
-      - VIRTUAL_PORT=80
-      - CODE_PATH=/php/code
-      - KEYPORTAL=true
-      - MAILHUB=10.131.1.19
-      - FROMLINEOVERRIDE=YES
-
-  allowlist-reload:
-    image: magnuscolors/allowlist-reload
-    container_name: allowlist-reload
-    restart: unless-stopped
-    environment:
-      - ALLOW_LIST=/php/code/KeyPortal/iplog-bo
-    volumes:
-      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
-      - /var/run/docker.sock:/var/run/docker.sock
-      - .php:/php
-
-  dbprod:
-    environment:
-      - POSTGRES_USER=odoo
-      - POSTGRES_DB=ammer01
-    image: postgres:9.6
-    restart: unless-stopped
-    volumes:
-      - .db/data/:/var/lib/postgresql/data
-      - .db/socket/:/var/run/postgresql/
-    ports:
-      - 5432:5432
+#  php:
+#    image: magnuscolors/php-keyportal
+#    container_name: php
+#    restart: unless-stopped
+#    volumes:
+#      - .php:/php
+#      - .db/socket/:/var/run/postgresql/
+#    environment:
+#      - HOST=${HOST}
+#      - SUB=bo-test
+#      - VIRTUAL_HOST=keyportal
+#      - VIRTUAL_PORT=80
+#      - CODE_PATH=/php/code
+#      - KEYPORTAL=true
+#      - MAILHUB=10.131.1.19
+#      - FROMLINEOVERRIDE=YES
+#
+#  allowlist-reload:
+#    image: magnuscolors/allowlist-reload
+#    container_name: allowlist-reload
+#    restart: unless-stopped
+#    environment:
+#      - ALLOW_LIST=/php/code/KeyPortal/iplog-bo
+#    volumes:
+#      - ${NGINX_FILES_PATH}/conf.d:/etc/nginx/conf.d
+#      - /var/run/docker.sock:/var/run/docker.sock
+#      - .php:/php
 
   dbtest:
     environment:
@@ -95,6 +83,38 @@ services:
       - .db/socket/:/var/run/postgresql/
     ports:
       - 5432:5432
+
+  odootest:
+    image: magnuscolors/voodoo:1.0-pdf2image
+    restart: unless-stopped
+    expose:
+      - 8069
+      - 8072
+    environment:
+      - AK_ENV=dev # TODO avoid repetition
+      - VIRTUAL_HOST=bo-test.amsterdam-merchandising.nl
+      - VIRTUAL_PORT=8069,8072/longpolling
+      - ALLOWLIST=false
+      - LETSENCRYPT_HOST=bo-test.amsterdam-merchandising.nl
+      - LETSENCRYPT_EMAIL=${EMAIL}
+    volumes:
+      - /home/voodoo/ammer-prod/.db/socket/:/var/run/postgresql/
+      - /home/voodoo/ammer-prod/data:/home/odoo/data
+    labels:
+      main_service: "True"
+    command: ["ak","run"]
+
+  dbprod:
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_DB=ammer01
+    image: postgres:9.6
+    restart: unless-stopped
+    volumes:
+      - /home/voodoo/ammer-prod/.db/data/:/var/lib/postgresql/data
+      - /home/voodoo/ammer-prod/.db/socket/:/var/run/postgresql/
+    ports:
+      - 15432:5432
 
   odooprod:
     build:
@@ -109,14 +129,14 @@ services:
       - 8072
     environment:
       - AK_ENV=prod # TODO avoid repetition
-      - VIRTUAL_HOST=${HOST}
+      - VIRTUAL_HOST=bo.amsterdam-merchandising.nl
       - VIRTUAL_PORT=8069,8072/longpolling
-      - ALLOWLIST=true
-      - LETSENCRYPT_HOST=${HOST}
+      - ALLOWLIST=false
+      - LETSENCRYPT_HOST=bo.amsterdam-merchandising.nl
       - LETSENCRYPT_EMAIL=${EMAIL}
     volumes:
-      - /home/voodoo/ammet-prod/.db/socket/:/var/run/postgresql/
-      - /home/voodoo/ammet-prod/data:/home/odoo/data
+      - /home/voodoo/ammer-prod/.db/socket/:/var/run/postgresql/
+      - /home/voodoo/ammer-prod/data:/home/odoo/data
     labels:
       main_service: "True"
     command: ["ak","run"]
@@ -127,6 +147,6 @@ services:
     environment:
     - ODOO_QUEUE_JOB_CHANNELS=root:4,root.one:1,root.two:2,root.three:3,root.import:2,root.Ad4all:2,root.ir_cron:2
     volumes:
-    - /home/voodoo/ammet-prod/.db/socket/:/var/run/postgresql/
-    - /home/voodoo/ammet-prod/data:/home/odoo/data
+    - /home/voodoo/ammer-prod/.db/socket/:/var/run/postgresql/
+    - /home/voodoo/ammer-prod/data:/home/odoo/data
     command: ["ak","run","--max-cron-threads=2","--load=web,web_kanban,queue_job","--workers=4"]
