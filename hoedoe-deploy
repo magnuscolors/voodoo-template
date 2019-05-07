@@ -11,40 +11,37 @@ TAG=$2
 VOLUMES="-v $(pwd)/data:/home/odoo/data"
 VOODINDOCK="magnuscolors/voodindock:latest"
 DC_DIR="/home/voodoo/bdu-test"
-
 if [[ -z $1 ]]
     then
-    echo "Which Image should be altered for deploy?"
-    read IMAGE
-    echo "Which Tag?"
-    read TAG
-        if [[ -z ${TAG} ]]
-        then
-            IMAGENAME=$IMAGE
-        else
-            IMAGENAME=${IMAGE}:${TAG}
-        fi
+        echo "Which Image should be altered for deploy?"
+        read IMAGE
+        echo "Which Tag?"
+        read TAG
+            if [[ -z ${TAG} ]]
+            then
+                IMAGENAME=$IMAGE
+            else
+                IMAGENAME=${IMAGE}:${TAG}
+            fi
 fi
-
 OLDIMAGEID=$(docker images -q --filter=reference=${IMAGENAME})
 echo "Do you want to update the database from the command line? (y/n)"
 read A
-
 if [[ ${A} = "y" ]]
-then
-    if  [[ ! -z $(docker ps -q -f "ancestor=${OLDIMAGEID}") ]]
     then
-        try docker rm -f $(docker ps -q -f "ancestor=${OLDIMAGEID}")
-        echo "Removed containers derived from Image ${OLDIMAGEID}."
-    fi
-    echo "Do you want to use the socket connection with the database, if not you
-     have to do ak run --db_host=xxx.xxx.xxx.xxx --db_port=5432
-     (y/n)"
-    read K
-        if [[ ${K} = "y" ]]
+        if  [[ ! -z $(docker ps -q -f "ancestor=${OLDIMAGEID}") ]]
             then
-            VOLUMES="$VOLUMES -v $(pwd)/.db/socket/:/var/run/postgresql/"
+                try docker rm -f $(docker ps -q -f "ancestor=${OLDIMAGEID}")
+                echo "Removed containers derived from Image ${OLDIMAGEID}."
         fi
+        echo "Do you want to use the socket connection with the database, if not you
+         have to do ak run --db_host=xxx.xxx.xxx.xxx --db_port=5432
+         (y/n)"
+        read K
+            if [[ ${K} = "y" ]]
+                then
+                VOLUMES="$VOLUMES -v $(pwd)/.db/socket/:/var/run/postgresql/"
+            fi
 fi
 
 try docker run -it -u root ${VOLUMES} --name hoedoedeploy ${IMAGENAME} bash
