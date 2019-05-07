@@ -51,3 +51,5 @@ RENAME TO new_table_name; ## to change table-name
 insert into analytic_user_total_analytic_line_rel (analytic_line_id,user_total_id)
 SELECT account_analytic_line_id,analytic_account_id
     FROM analytic_invoice_account_line_reluser_total_id;
+
+testje
