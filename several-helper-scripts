@@ -3,7 +3,7 @@
 docker run -d -v /var/run/docker.sock:/tmp/docker.sock:ro -v /etc/hosts:/app/hosts -p 80:80 --network vd --name voodoo-proxy akretion/voodoo-proxy
 
 ## startup script voor build container
-docker run -it -v /home/voodoo/xxx-test/.db/socket:/var/run/postgresql -v /home/voodoo/xxx-test:/workspace -v
+docker run -it -u odoo -v /home/voodoo/xxx-test/.db/socket:/var/run/postgresql -v /home/voodoo/xxx-test:/workspace -v
 /home/voodoo/.voodoo/shared:/home/voodoo/.voodoo/share --name xxxtest_odoo_build magnuscolors/voodoo:1.0-pdf2image bash
 
 ## nginx directive for buffered static content Odoo
