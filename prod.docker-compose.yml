@@ -72,10 +72,10 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - .php:/php
 
-  db:
+  dbprod:
     environment:
       - POSTGRES_USER=odoo
-      - POSTGRES_DB=db
+      - POSTGRES_DB=ammer01
     image: postgres:9.6
     restart: unless-stopped
     volumes:
@@ -84,13 +84,25 @@ services:
     ports:
       - 5432:5432
 
-  odoo:
+  dbtest:
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_DB=ammer01
+    image: postgres:9.6
+    restart: unless-stopped
+    volumes:
+      - .db/data/:/var/lib/postgresql/data
+      - .db/socket/:/var/run/postgresql/
+    ports:
+      - 5432:5432
+
+  odooprod:
     build:
       context: .
       dockerfile: Dockerfile-prod
       args:
         - AK_ENV=prod
-    image: magnus-registry:443/xxxprod_odoo:latest
+    image: magnus-registry:443/ammerprod_odoo:latest
     restart: unless-stopped
     expose:
       - 8069
@@ -103,18 +115,18 @@ services:
       - LETSENCRYPT_HOST=${HOST}
       - LETSENCRYPT_EMAIL=${EMAIL}
     volumes:
-      - .db/socket/:/var/run/postgresql/
-      - ./data:/home/odoo/data
+      - /home/voodoo/ammet-prod/.db/socket/:/var/run/postgresql/
+      - /home/voodoo/ammet-prod/data:/home/odoo/data
     labels:
       main_service: "True"
     command: ["ak","run"]
 
-  odoojq:
-    image: magnus-registry:443/xxxprod_odoo:latest
+  odoojqprod:
+    image: magnus-registry:443/ammerprod_odoo:latest
     restart: unless-stopped
     environment:
     - ODOO_QUEUE_JOB_CHANNELS=root:4,root.one:1,root.two:2,root.three:3,root.import:2,root.Ad4all:2,root.ir_cron:2
     volumes:
-    - .db/socket/:/var/run/postgresql/
-    - ./data:/home/odoo/data
+    - /home/voodoo/ammet-prod/.db/socket/:/var/run/postgresql/
+    - /home/voodoo/ammet-prod/data:/home/odoo/data
     command: ["ak","run","--max-cron-threads=2","--load=web,web_kanban,queue_job","--workers=4"]
