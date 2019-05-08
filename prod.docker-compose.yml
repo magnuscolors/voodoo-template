@@ -98,8 +98,9 @@ services:
       - LETSENCRYPT_HOST=bo-test.amsterdam-merchandising.nl
       - LETSENCRYPT_EMAIL=${EMAIL}
     volumes:
-      - /home/voodoo/ammer-prod/.db/socket/:/var/run/postgresql/
-      - /home/voodoo/ammer-prod/data:/home/odoo/data
+      - .db/socket/:/var/run/postgresql/
+      - .:/workspace
+      - /home/voodoo/.voodoo/shared:/home/voodoo/.voodoo/shared
     labels:
       main_service: "True"
     command: ["ak","run"]
