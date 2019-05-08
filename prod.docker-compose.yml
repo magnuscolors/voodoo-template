@@ -147,6 +147,7 @@ services:
     restart: unless-stopped
     environment:
       - VIRTUAL_HOST=
+      - VIRTUAL_PORT=
       - ODOO_QUEUE_JOB_CHANNELS=root:4,root.one:1,root.two:2,root.three:3,root.import:2,root.Ad4all:2,root.ir_cron:2
     volumes:
       - /home/voodoo/ammer-prod/.db/socket/:/var/run/postgresql/

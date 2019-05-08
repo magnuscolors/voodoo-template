@@ -36,7 +36,7 @@ python bin/gevent_start scaffold [-h] [-t TEMPLATEPATH] name_mod [location_path]
 ## To update CoreOS forced:
 update_engine_client -update
 
-## To grant rights tp postgres users per object/table
+## To grant rights to postgres users per object/table
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO user;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO user;
 
