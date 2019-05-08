@@ -2,7 +2,7 @@
 location = /web/database/manager {
 	 allow 10.147.18.0/24;
     	 deny all;
-	 proxy_pass http://url_8069;
+	 proxy_pass http://bo-test.amsterdam-merchandising.nl_8069;
 }
 ## nginx directive for buffered static content Odoo
 location ~* /web/static/ {
