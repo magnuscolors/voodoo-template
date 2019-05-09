@@ -13,5 +13,5 @@ location ~* /web/static/ {
         proxy_buffering on;
         proxy_hide_header Set-Cookie;
         proxy_ignore_headers Set-Cookie;
-        proxy_pass http://url_8069;
+        proxy_pass http://bo.amsterdam-merchandising.nl_8069;
 }
