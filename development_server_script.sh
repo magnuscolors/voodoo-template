@@ -32,7 +32,7 @@ sudo cp -ra /home/voodoo/parts/${BASE}/ /home/voodoo/parts/${HOST_BASE}/
 IFS=","
 for DB in $BASEDBS
 do
-sudo mv  /home/voodoo/filestore/${HOST_BASE}/filestore/$DB /home/voodoo/filestore/${HOST_BASE}/filestore/$DB${DEVELOPER}
+sudo mv  /home/voodoo/filestore/${HOST_BASE}/filestore/$DB /home/voodoo/filestore/${HOST_BASE}/filestore/${DB}${DEVELOPER}
 done
 
 sudo rm /home/voodoo/${BASE_DEV}/docker-compose.yml
@@ -43,7 +43,7 @@ docker run  --rm -v /home/voodoo/base/.db/socket:/var/run/postgresql/ -e PGPASSW
 docker run  --rm -v /home/voodoo/base/.db/socket:/var/run/postgresql/ -e PGPASSWORD=magnuscolors postgres:${PG_VERSION} psql -U postgres -t -c "CREATE ROLE "odoo${DEVELOPER}" SUPERUSER CREATEDB CREATEROLE LOGIN REPLICATION BYPASSRLS PASSWORD '"${DEVELOPER_PASSWD}"';ALTER DATABASE "$BASEDB${DEVELOPER}" OWNER TO odoo"${DEVELOPER}";"
 
 # odoo.cfg
-sudo sh -c "sed -i 's/\(db_name =\).*$/\1 "$BASEDB${DEVELOPER}"/' /home/voodoo/${HOST_BASE}/etc/odoo.cfg"
+sudo sh -c "sed -i 's/\(db_name =\).*$/\1 "${BASEDB}${DEVELOPER}"/' /home/voodoo/${HOST_BASE}/etc/odoo.cfg"
 sudo sh -c "sed -i 's/\(db_password =\).*$/\1 "${DEVELOPER_PASSWD}"/' /home/voodoo/${HOST_BASE}/etc/odoo.cfg"
 sudo sh -c "sed -i 's/\(db_user =\).*$/\1 "odoo${DEVELOPER}"/' /home/voodoo/${HOST_BASE}/etc/odoo.cfg"
 
