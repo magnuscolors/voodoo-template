@@ -25,8 +25,8 @@ if [[ -z $1 ]]
             fi
 fi
 OLDIMAGEID=$(docker images -q --filter=reference=${IMAGENAME})
-echo "Do you want to update the database from the command line? (y/n)"
-read A
+
+read -p "Do you want to update the database from the command line? (y/n) " A
 if [[ ${A} = "y" ]]
     then
         if  [[ ! -z $(docker ps -q -f "ancestor=${OLDIMAGEID}") ]]
@@ -34,10 +34,9 @@ if [[ ${A} = "y" ]]
                 try docker rm -f $(docker ps -q -f "ancestor=${OLDIMAGEID}")
                 echo "Removed containers derived from Image ${OLDIMAGEID}."
         fi
-        echo "Do you want to use the socket connection with the database, if not you
+        read -p "Do you want to use the socket connection with the database, if not you
          have to do ak run --db_host=xxx.xxx.xxx.xxx --db_port=5432
-         (y/n)"
-        read K
+         (y/n): " K
             if [[ ${K} = "y" ]]
                 then
                 VOLUMES="$VOLUMES -v $(pwd)/.db/socket/:/var/run/postgresql/"
@@ -46,18 +45,16 @@ fi
 
 try docker run -it -u root ${VOLUMES} --name hoedoedeploy ${IMAGENAME} bash
 
-echo "Do you want to commit the changes you made to ${IMAGENAME}? (y/n)"
-read B
+
+read -p "Do you want to commit the changes you made to ${IMAGENAME}? (y/n): " B
 if [[ ${B} = "y" ]]
     then
         try docker commit hoedoedeploy ${IMAGENAME}
     else
-        echo "Do you want to commit to a different image? (y/n)"
-        read D
+        read -p "Do you want to commit to a different image? (y/n): " D
     if [[ ${D} = "y" ]]
         then
-            echo "Please specify the IMAGE:TAG you want to commit to"
-            read E
+            read -p "Please specify the IMAGE:TAG you want to commit to:" E
             echo "Are you sure you want to commit to $E?"
             read F
             if [[ ${F} = "y" ]]
