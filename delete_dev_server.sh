@@ -68,15 +68,14 @@ then
     sudo sh -c "sed -i 's/\(dbfilter =\).*$/\1 "${DB_FILTER}"/' /home/voodoo/${HOST_BASE}/etc/odoo.cfg"
 fi
 
-# nfs export definition: to do: sed if exists overwrite else add
-# sudo sh -c "echo '/data1/"${DEVELOPER}" 10.147.18.118(rw,anonuid=1000,anongid=1000,sync,all_squash) 10.147.18.124(rw,anonuid=1000,anongid=1000,sync,all_squash) "$DEVELOPER_IP"(rw,anonuid=1000,anongid=1000,sync,all_squash)' >> /opt/nfs-server/exports.txt"
-sudo sh -c "grep -q "^/data1/"${DEVELOPER}"" /opt/nfs-server/exports.txt && sed "s/^\/data1\/"${DEVELOPER}".*/\/data1\/"${DEVELOPER}" 10.147.18.118\(rw,anonuid=1000,anongid=1000,sync,all_squash\) 10.147.18.124\(rw,anonuid=1000,anongid=1000,sync,all_squash\) "$DEVELOPER_IP"\(rw,anonuid=1000,anongid=1000,sync,all_squash\)/" -i /opt/nfs-server/exports.txt ||
-    sed "$ a\\/data1\/"${DEVELOPER}" 10.147.18.118\(rw,anonuid=1000,anongid=1000,sync,all_squash\) 10.147.18.124\(rw,anonuid=1000,anongid=1000,sync,all_squash\) "$DEVELOPER_IP"\(rw,anonuid=1000,anongid=1000,sync,all_squash\)" -i /opt/nfs-server/exports.txt"
-
 # .env file always gets overwritten again
 su $USER sh -c "printf 'HOST="${BASE_DEV}".vd\nHOST_BASE="${HOST_BASE}"' > /home/voodoo/"${BASE_DEV}"/.env"
 
+# adapt exports.txt for nfs-server and restart it
 if [[ $NFS_RESTART_YN =~ [yY](es)* ]]
 then
-    docker-compose -f /opt/nfs-server/docker-compose.yml restart
+    sudo sh -c "grep -q "^/data1/"${DEVELOPER}"" /opt/nfs-server/exportswh.txt && sed 's/^\/data1\/"${DEVELOPER}".*/\/data1\/"${DEVELOPER}" 10.147.18.118\(rw,anonuid=1000,anongid=1000,sync,all_squash\) 10.147.18.124\(rw,anonuid=1000,anongid=1000,sync,all_squash\) "$DEVELOPER_IP"\(rw,anonuid=1000,anongid=1000,sync,all_squash\)/' -i /opt/nfs-server/exportswh.txt ||
+    sed '$ a\\/data1\/"${DEVELOPER}" 10.147.18.118\(rw,anonuid=1000,anongid=1000,sync,all_squash\) 10.147.18.124\(rw,anonuid=1000,anongid=1000,sync,all_squash\) "$DEVELOPER_IP"\(rw,anonuid=1000,anongid=1000,sync,all_squash\)' -i /opt/nfs-server/exportswh.txt"
+    cd /opt/nfs-server
+    docker-compose restart
 fi

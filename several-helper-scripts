@@ -52,4 +52,8 @@ insert into analytic_user_total_analytic_line_rel (analytic_line_id,user_total_i
 SELECT account_analytic_line_id,analytic_account_id
     FROM analytic_invoice_account_line_reluser_total_id;
 
-testje
+## create remote ssh tunnel:
+ssh -fNR 1443:localhost:443 core@35.204.180.49
+## show ssh connections incl. tunnels
+sudo lsof -i -n | egrep '\<ssh\>'
+## kill pid to kill a ssh tunnel
