@@ -4,8 +4,8 @@ DEVELOPERS=$1
 ROLE_YN=$2
 BASE=$3
 BASEDBS=$4
-DEVELOPER_PASSWD=$5
-DEVELOPER_IP=$6
+DEVELOPER_PASSWDS=$5
+DEVELOPER_IPS=$6
 DB_FILTER=$7
 
 if [[ $DEVELOPERS = "" ]]
@@ -41,15 +41,29 @@ IFS=","
 COUNTERDEV=0
 COUNTERPASS=0
 COUNTERIP=0
+IFS=","
 for DEVELOPER in $DEVELOPERS
 do
   COUNTERDEV=$((COUNTER + 1))
+  IFS=","
   for DEVELOPER_PASSWD in $DEVELOPER_PASSWDS
   do
     COUNTERPASS=$((COUNTERPASS + 1))
+    if [[ $COUNTERDEV != $COUNTERPASS ]]
+    then
+      continue
+    fi
+    IFS=","
     for DEVELOPER_IP in $DEVELOPER_IPS
     do
       COUNTERIP=$((COUNTERPASS + 1))
+      if [[ $COUNTERDEV != $COUNTERIP ]]
+      then
+      continue
+      fi
+
+
+
 ## START OF LOOP
 HOST_BASE=${DEVELOPER}/${BASE}
 BASE_DEV=${BASE}-${DEVELOPER}
@@ -117,6 +131,10 @@ then
     check_exec_ok "/data1/"${DEVELOPER}" and "${DEVELOPER_IP}" set in exports.txt" "exports.txt NOT correctly set"
 fi
 
+    done
+  COUNTERIP=0
+  done
+COUNTERPASS=0
 done
 ## END OF LOOP
 
