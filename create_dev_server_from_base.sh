@@ -37,27 +37,26 @@ EMAIL="${EMAIL:=w.hulshof@magnus.nl}"
 USER="${USER:=voodoo}"
 PG_VERSION="${PG_VERSION:=9.6}"
 
-IFS=","
 COUNTERDEV=0
-COUNTERPASS=0
-COUNTERIP=0
 IFS=","
 for DEVELOPER in $DEVELOPERS
 do
-  COUNTERDEV=$((COUNTER + 1))
+  COUNTERPASS=0
+  COUNTERDEV=$((COUNTERDEV + 1))
   IFS=","
   for DEVELOPER_PASSWD in $DEVELOPER_PASSWDS
   do
     COUNTERPASS=$((COUNTERPASS + 1))
-    if [[ $COUNTERDEV != $COUNTERPASS ]]
+    if ! [[ $COUNTERDEV = $COUNTERPASS ]]
     then
       continue
     fi
+    COUNTERIP=0
     IFS=","
     for DEVELOPER_IP in $DEVELOPER_IPS
     do
-      COUNTERIP=$((COUNTERPASS + 1))
-      if [[ $COUNTERDEV != $COUNTERIP ]]
+      COUNTERIP=$((COUNTERIP + 1))
+      if ! [[ $COUNTERDEV = $COUNTERIP ]]
       then
       continue
       fi
@@ -132,9 +131,7 @@ then
 fi
 
     done
-  COUNTERIP=0
   done
-COUNTERPASS=0
 done
 ## END OF LOOP
 
