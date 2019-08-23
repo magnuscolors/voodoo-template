@@ -57,3 +57,6 @@ ssh -fNR 1443:localhost:443 core@35.204.180.49
 ## show ssh connections incl. tunnels
 sudo lsof -i -n | egrep '\<ssh\>'
 ## kill pid to kill a ssh tunnel
+
+## config git to show pr's
+    fetch = +refs/pull/*/head:refs/remotes/origin/pr/*
